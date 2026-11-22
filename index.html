@@ -550,10 +550,9 @@
 <div id="modal"><img id="modalImg" src="" alt="Foto"></div>
 
 <!-- =================================================================== -->
-<!-- SCRIPT PWA (TIDAK MENGUBAH LOGIKA APLIKASI DI BAWAH INI) -->
+<!-- SCRIPT PWA -->
 <!-- =================================================================== -->
 <script>
-  // 1. DAFTARKAN MANIFEST VIA BASE64 (Agar tidak perlu file tambahan)
   const manifestData = {
     name: "Kas Futsal - Preman Futsal",
     short_name: "Kas Futsal",
@@ -583,7 +582,6 @@
   const manifestURL = URL.createObjectURL(blob);
   document.querySelector('#pwaManifest').setAttribute('href', manifestURL);
 
-  // 2. SERVICE WORKER (Untuk caching dasar)
   if ('serviceWorker' in navigator) {
     const swCode = `
       const CACHE_NAME = 'kas-futsal-v1';
@@ -614,34 +612,28 @@
     });
   }
 
-  // 3. LOGIKA BANNER INSTALL (POP-UP TENGAH)
   let deferredPrompt;
   const installBanner = document.getElementById('pwaInstallBanner');
   const pwaOverlay = document.getElementById('pwaOverlay');
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-  // Fungsi untuk menampilkan pop-up beserta overlay
   function tampilkanPopup() {
     installBanner.style.display = 'block';
     pwaOverlay.classList.add('show');
   }
 
-  // Fungsi untuk menyembunyikan pop-up
   function sembunyikanPopup() {
     installBanner.style.display = 'none';
     pwaOverlay.classList.remove('show');
   }
 
-  // Jangan tampilkan banner jika sudah diinstal (standalone)
   if (isStandalone) {
     installBanner.style.display = 'none';
   } else {
-    // Deteksi Android / Chrome Desktop (sebelum prompt muncul)
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      // Tampilkan pop-up setelah sedikit delay agar animasi halaman selesai
       setTimeout(() => {
         if (localStorage.getItem('pwaBannerClosed') !== 'true') {
           tampilkanPopup();
@@ -649,9 +641,7 @@
       }, 1000);
     });
 
-    // Deteksi iOS (Safari tidak mendukung beforeinstallprompt)
     if (isIOS) {
-      // Tampilkan pop-up dengan instruksi khusus iOS
       const bannerHTML = document.querySelector('#pwaInstallBanner .banner-buttons');
       bannerHTML.innerHTML = `
         <button class="btn-later" onclick="tutupBanner()">Tutup 😅</button>
@@ -665,7 +655,6 @@
     }
   }
 
-  // Fungsi untuk tombol Instal
   window.installPWA = function() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -679,26 +668,22 @@
         sembunyikanPopup();
       });
     } else {
-      // Fallback jika prompt tidak tersedia (misal di iOS)
       alert('Silakan gunakan menu browser Anda dan pilih "Tambahkan ke Layar Utama" untuk menginstal.');
     }
   };
 
-  // Fungsi untuk menutup banner
   window.tutupBanner = function() {
     sembunyikanPopup();
-    // Simpan status agar tidak muncul terus-menerus (opsional)
     localStorage.setItem('pwaBannerClosed', 'true');
   };
 
-  // Sembunyikan banner jika sebelumnya sudah ditutup
   if (localStorage.getItem('pwaBannerClosed') === 'true') {
     installBanner.style.display = 'none';
   }
 </script>
 
 <!-- =================================================================== -->
-<!-- LOGIKA APLIKASI ASLI (TIDAK DIUBAH) -->
+<!-- LOGIKA APLIKASI -->
 <!-- =================================================================== -->
 <script>
 /* ================== KONFIGURASI ================== */
@@ -802,7 +787,7 @@ function renderRingkasan(){
   
   const latest = [...data].sort((a, b) => Number(b.id) - Number(a.id))[0];
   const pemasukanTerakhir = (+latest.pemasukan || 0);
-  const pengeluaranTerakhir = (+latest.pengeluaran || 0); // Menggunakan field pengeluaran dari GS
+  const pengeluaranTerakhir = (+latest.pengeluaran || 0);
 
   let totalMasukAll = 0;
   let totalKeluarAll = 0;
@@ -832,14 +817,12 @@ function renderRiwayat(){
   empty.style.display='none';
 
   let saldoBerjalan = 0;
-  // Kita urutkan dari yang terlama ke terbaru untuk menghitung saldo berjalan
   const dataWithSaldo = sortedDataAsc().map(t => {
     const keluar = (+t.pengeluaran || 0);
     saldoBerjalan += ((+t.pemasukan || 0) - keluar);
     return { ...t, sisaSaldo: saldoBerjalan, totalKeluar: keluar };
   });
 
-  // Tampilkan terbalik (terbaru di atas)
   dataWithSaldo.reverse().forEach(t => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -870,12 +853,23 @@ function renderPertandingan(){
   });
 
   dataWithSaldo.reverse().forEach(t => {
+    const sewa     = (+t.sewa || 0);
+    const konsumsi = (+t.konsumsi || 0);
+    const air      = (+t.air || 0);
+    const lain     = (+t.lain || 0);
+
     const card = document.createElement('div');
     card.className = 'match-card';
     card.innerHTML = `
       <h4><span>🏆 ${new Date(t.tgl).toLocaleDateString('id-ID')} <span class="loc">• ${t.lokasi}</span></span></h4>
       <ul>
-        <li><span>🏟️ Total Pengeluaran</span><span>${rupiah(t.totalKeluar)}</span></li>
+        <li><span>🏟️ Sewa Lapangan</span><span>${rupiah(sewa)}</span></li>
+        <li><span>🍔 Konsumsi</span><span>${rupiah(konsumsi)}</span></li>
+        <li><span>💧 Air Minum</span><span>${rupiah(air)}</span></li>
+        <li><span>📦 Lain-lain</span><span>${rupiah(lain)}</span></li>
+        <li style="border-top:1px solid rgba(255,255,255,.15); margin-top:4px; padding-top:8px; font-weight:700;">
+          <span>💸 Total Pengeluaran</span><span style="color:#f87171;">${rupiah(t.totalKeluar)}</span>
+        </li>
       </ul>
       <div class="totals">
         <span class="in">💰 ${rupiah(t.pemasukan)}</span>
@@ -913,17 +907,20 @@ async function ambilDataDariSpreadsheet() {
     const result = await response.json();
     
     if (Array.isArray(result)) {
-      // Ubah format dari Spreadsheet (pengeluaran) agar sesuai dengan format HTML
       data = result.map(item => ({
         id: item.id,
         tgl: item.tgl,
         lokasi: item.lokasi,
         pemasukan: item.pemasukan,
-        pengeluaran: item.pengeluaran, // Di HTML, ini kita anggap total pengeluaran
+        pengeluaran: item.pengeluaran,
+        sewa: item.sewa || 0,
+        konsumsi: item.konsumsi || 0,
+        air: item.air || 0,
+        lain: item.lain || 0,
         foto: item.foto
       })).sort((a, b) => Number(b.id) - Number(a.id));
 
-      render(); // Tampilkan ke layar
+      render();
     }
   } catch (error) {
     console.warn("Gagal mengambil data dari Spreadsheet, pastikan API_URL dan Deploy benar.", error);
@@ -940,6 +937,12 @@ async function simpanPertandingan() {
   const pemasukan = +document.getElementById('pemasukan').value || 0;
   const fileFoto = document.getElementById('foto').files[0];
 
+  // Ambil rincian pengeluaran
+  const sewa = +document.getElementById('sewa').value || 0;
+  const konsumsi = +document.getElementById('konsumsi').value || 0;
+  const air = +document.getElementById('air').value || 0;
+  const lain = +document.getElementById('lain').value || 0;
+
   if(!tgl || !lokasi) {
     alert("⚠️ Mohon isi Tanggal dan Lokasi Pertandingan terlebih dahulu!");
     return;
@@ -948,24 +951,19 @@ async function simpanPertandingan() {
   btnSubmit.disabled = true;
   btnSubmit.innerHTML = "⏳ Memproses...";
 
-  // Hitung total pengeluaran yang diinput
-  const totalKeluar = 
-    (+document.getElementById('sewa').value || 0) +
-    (+document.getElementById('konsumsi').value || 0) +
-    (+document.getElementById('air').value || 0) +
-    (+document.getElementById('lain').value || 0);
+  const totalKeluar = sewa + konsumsi + air + lain;
 
   const newItem = {
     id: Date.now().toString(),
     tgl, lokasi, pemasukan, pengeluaran: totalKeluar,
+    sewa, konsumsi, air, lain,
     foto: null
   };
 
-  // LANGKAH 1: Simpan ke Array lokal agar langsung tampil
   data.push(newItem);
   render(); 
 
-  // LANGKAH 2: Upload Foto (Jika ada)
+  // Upload Foto (Jika ada)
   if(fileFoto) {
     btnSubmit.innerHTML = "⏳ Mengunggah Foto...";
     
@@ -993,11 +991,10 @@ async function simpanPertandingan() {
     }
   }
 
-  // LANGKAH 3: Kirim Data ke Spreadsheet
+  // Kirim Data ke Spreadsheet
   try {
     btnSubmit.innerHTML = "⏳ Menyimpan ke Spreadsheet...";
     
-    // Hitung total saldo keseluruhan untuk dicatat di spreadsheet
     const totalMasukAll = data.reduce((acc, curr) => acc + (+curr.pemasukan || 0), 0);
     const totalKeluarAll = data.reduce((acc, curr) => acc + (+curr.pengeluaran || 0), 0);
     const sisaSaldo = totalMasukAll - totalKeluarAll;
@@ -1007,6 +1004,10 @@ async function simpanPertandingan() {
     formData.append('tgl', newItem.tgl);
     formData.append('lokasi', newItem.lokasi);
     formData.append('pemasukan', newItem.pemasukan);
+    formData.append('sewa', newItem.sewa);
+    formData.append('konsumsi', newItem.konsumsi);
+    formData.append('air', newItem.air);
+    formData.append('lain', newItem.lain);
     formData.append('pengeluaran', newItem.pengeluaran);
     formData.append('saldo', sisaSaldo);
     formData.append('foto', newItem.foto || "-");
@@ -1017,7 +1018,7 @@ async function simpanPertandingan() {
     console.warn("Gagal kirim ke Spreadsheet. Data hanya tersimpan sementara di layar.");
   }
 
-  // LANGKAH 4: Reset Form & Kembali ke Dashboard
+  // Reset Form & Kembali ke Dashboard
   document.getElementById('formPertandingan').reset();
   ['sewa','konsumsi','air','lain'].forEach(id => document.getElementById(id).value = '0'); 
   resetUploadArea(); 
@@ -1049,12 +1050,10 @@ document.getElementById('modal').addEventListener('click', function(){
   this.classList.remove('show');
 });
 
-/* ================== INIT (SAAT REFRESH) ================== */
+/* ================== INIT ================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // Ambil data terbaru langsung dari Google Spreadsheet
   ambilDataDariSpreadsheet();
 
-  // Pasang event listener foto
   const inputFoto = document.getElementById('foto');
   if (inputFoto) {
     inputFoto.addEventListener('change', function(e) {
