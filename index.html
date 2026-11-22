@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Kas Futsal ⚽</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#1a0033">
+
+<!-- PWA MANIFEST (BASE64) -->
+<link rel="manifest" id="pwaManifest">
+
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
 
@@ -294,9 +299,158 @@
     .upload-placeholder span { font-size: 20px; }
     #previewFoto { max-height: 150px; }
   }
+
+  /* ===== POP-UP INSTALL PWA (TENGAH DASHBOARD, LUCU) ===== */
+  #pwaInstallBanner {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 90%;
+    max-width: 360px;
+    background: rgba(15,23,42,0.98);
+    backdrop-filter: blur(16px);
+    border: 3px solid transparent;
+    background-image: linear-gradient(rgba(15,23,42,0.98), rgba(15,23,42,0.98)), 
+                      linear-gradient(135deg, #22d3ee, #a78bfa, #f472b6, #facc15);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    border-radius: 28px;
+    padding: 24px 20px 20px;
+    z-index: 999;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(167,139,250,0.4);
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(-8deg); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  }
+  #pwaInstallBanner::before {
+    content: '🎉';
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 42px;
+    animation: bounceEmoji 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  }
+  @keyframes bounceEmoji {
+    0%,100% { transform: translateX(-50%) translateY(0) rotate(-10deg); }
+    50% { transform: translateX(-50%) translateY(-12px) rotate(10deg); }
+  }
+  #pwaInstallBanner .banner-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  #pwaInstallBanner .banner-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  #pwaInstallBanner .banner-header img {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    border: 3px solid rgba(167,139,250,0.6);
+    padding: 4px;
+    background: rgba(255,255,255,0.1);
+    animation: wiggle 2.5s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(34,211,238,0.5);
+  }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(-4deg) scale(1); }
+    50% { transform: rotate(4deg) scale(1.08); }
+  }
+  #pwaInstallBanner .banner-header h3 {
+    font-size: 17px;
+    font-weight: 800;
+    background: linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  #pwaInstallBanner .banner-header p {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+  #pwaInstallBanner .banner-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  #pwaInstallBanner button {
+    flex: 1;
+    padding: 12px;
+    font-size: 13px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 700;
+    border: none;
+  }
+  #pwaInstallBanner .btn-later {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #cbd5e1;
+  }
+  #pwaInstallBanner .btn-later:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  #pwaInstallBanner .btn-install {
+    background: linear-gradient(135deg,#22d3ee,#a78bfa,#f472b6);
+    background-size: 200% 200%;
+    color: #fff;
+    animation: btnGrad 3s ease infinite;
+    box-shadow: 0 6px 20px rgba(167,139,250,0.5);
+  }
+  #pwaInstallBanner .btn-install:hover {
+    transform: translateY(-2px) scale(1.03);
+  }
+  /* Overlay gelap di belakang pop-up */
+  #pwaOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 998;
+    animation: fadeIn 0.3s ease;
+  }
+  #pwaOverlay.show { display: block; }
+
+  @media(max-width: 850px) {
+    #pwaInstallBanner { max-width: 300px; padding: 20px 16px 16px; border-radius: 22px; }
+    #pwaInstallBanner::before { font-size: 34px; top: -22px; }
+    #pwaInstallBanner .banner-header img { width: 52px; height: 52px; border-radius: 14px; }
+    #pwaInstallBanner .banner-header h3 { font-size: 15px; }
+    #pwaInstallBanner .banner-header p { font-size: 11px; }
+    #pwaInstallBanner button { padding: 10px; font-size: 12px; }
+  }
 </style>
 </head>
 <body>
+
+<!-- OVERLAY & POP-UP INSTALL PWA -->
+<div id="pwaOverlay"></div>
+<div id="pwaInstallBanner">
+  <div class="banner-content">
+    <div class="banner-header">
+      <img src="https://lh3.googleusercontent.com/d/1WU3pqahRqGzUlKa60UK9kdZ9BzkQchja=w2000" alt="Logo">
+      <div>
+        <h3>Instal Aplikasi Kas Futsal ⚽</h3>
+        <p>Biar makin gampang aksesnya, yuk pasang di layar utama! 📲</p>
+      </div>
+    </div>
+    <div class="banner-buttons">
+      <button class="btn-later" onclick="tutupBanner()">Nanti Aja 😅</button>
+      <button class="btn-install" onclick="installPWA()">Gas Instal! 🚀</button>
+    </div>
+  </div>
+</div>
 
 <div id="pageDashboard" class="page active">
   <div class="container">
@@ -395,6 +549,157 @@
 
 <div id="modal"><img id="modalImg" src="" alt="Foto"></div>
 
+<!-- =================================================================== -->
+<!-- SCRIPT PWA (TIDAK MENGUBAH LOGIKA APLIKASI DI BAWAH INI) -->
+<!-- =================================================================== -->
+<script>
+  // 1. DAFTARKAN MANIFEST VIA BASE64 (Agar tidak perlu file tambahan)
+  const manifestData = {
+    name: "Kas Futsal - Preman Futsal",
+    short_name: "Kas Futsal",
+    description: "Dashboard Kas Futsal",
+    start_url: window.location.href,
+    display: "standalone",
+    background_color: "#0f172a",
+    theme_color: "#1a0033",
+    icons: [
+      {
+        src: "https://lh3.googleusercontent.com/d/1WU3pqahRqGzUlKa60UK9kdZ9BzkQchja=w2000",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any maskable"
+      },
+      {
+        src: "https://lh3.googleusercontent.com/d/1WU3pqahRqGzUlKa60UK9kdZ9BzkQchja=w2000",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  
+  const stringManifest = JSON.stringify(manifestData);
+  const blob = new Blob([stringManifest], {type: 'application/json'});
+  const manifestURL = URL.createObjectURL(blob);
+  document.querySelector('#pwaManifest').setAttribute('href', manifestURL);
+
+  // 2. SERVICE WORKER (Untuk caching dasar)
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      const CACHE_NAME = 'kas-futsal-v1';
+      const urlsToCache = [
+        '/',
+        window.location.href
+      ];
+      self.addEventListener('install', event => {
+        event.waitUntil(
+          caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(urlsToCache))
+        );
+      });
+      self.addEventListener('fetch', event => {
+        event.respondWith(
+          caches.match(event.request)
+            .then(response => response || fetch(event.request))
+        );
+      });
+    `;
+    const swBlob = new Blob([swCode], {type: 'application/javascript'});
+    const swURL = URL.createObjectURL(swBlob);
+    
+    navigator.serviceWorker.register(swURL).then(reg => {
+      console.log('SW Registered!', reg);
+    }).catch(err => {
+      console.warn('SW Registration failed:', err);
+    });
+  }
+
+  // 3. LOGIKA BANNER INSTALL (POP-UP TENGAH)
+  let deferredPrompt;
+  const installBanner = document.getElementById('pwaInstallBanner');
+  const pwaOverlay = document.getElementById('pwaOverlay');
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+  // Fungsi untuk menampilkan pop-up beserta overlay
+  function tampilkanPopup() {
+    installBanner.style.display = 'block';
+    pwaOverlay.classList.add('show');
+  }
+
+  // Fungsi untuk menyembunyikan pop-up
+  function sembunyikanPopup() {
+    installBanner.style.display = 'none';
+    pwaOverlay.classList.remove('show');
+  }
+
+  // Jangan tampilkan banner jika sudah diinstal (standalone)
+  if (isStandalone) {
+    installBanner.style.display = 'none';
+  } else {
+    // Deteksi Android / Chrome Desktop (sebelum prompt muncul)
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Tampilkan pop-up setelah sedikit delay agar animasi halaman selesai
+      setTimeout(() => {
+        if (localStorage.getItem('pwaBannerClosed') !== 'true') {
+          tampilkanPopup();
+        }
+      }, 1000);
+    });
+
+    // Deteksi iOS (Safari tidak mendukung beforeinstallprompt)
+    if (isIOS) {
+      // Tampilkan pop-up dengan instruksi khusus iOS
+      const bannerHTML = document.querySelector('#pwaInstallBanner .banner-buttons');
+      bannerHTML.innerHTML = `
+        <button class="btn-later" onclick="tutupBanner()">Tutup 😅</button>
+        <button class="btn-install" onclick="alert('Klik tombol Share (kotak dengan panah ke atas) di Safari, lalu pilih \\'Tambahkan ke Layar Utama\\'.')">Cara Instal 📲</button>
+      `;
+      if (localStorage.getItem('pwaBannerClosed') !== 'true') {
+        setTimeout(() => {
+          tampilkanPopup();
+        }, 1000);
+      }
+    }
+  }
+
+  // Fungsi untuk tombol Instal
+  window.installPWA = function() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        deferredPrompt = null;
+        sembunyikanPopup();
+      });
+    } else {
+      // Fallback jika prompt tidak tersedia (misal di iOS)
+      alert('Silakan gunakan menu browser Anda dan pilih "Tambahkan ke Layar Utama" untuk menginstal.');
+    }
+  };
+
+  // Fungsi untuk menutup banner
+  window.tutupBanner = function() {
+    sembunyikanPopup();
+    // Simpan status agar tidak muncul terus-menerus (opsional)
+    localStorage.setItem('pwaBannerClosed', 'true');
+  };
+
+  // Sembunyikan banner jika sebelumnya sudah ditutup
+  if (localStorage.getItem('pwaBannerClosed') === 'true') {
+    installBanner.style.display = 'none';
+  }
+</script>
+
+<!-- =================================================================== -->
+<!-- LOGIKA APLIKASI ASLI (TIDAK DIUBAH) -->
+<!-- =================================================================== -->
 <script>
 /* ================== KONFIGURASI ================== */
 const API_URL = "https://script.google.com/macros/s/AKfycbzStP3tjmzsHIWKB1mnIzmJycm0arF3FrCMIKLnQlkMFn417GoX92czgFGo3vbzxmDH/exec"; 
