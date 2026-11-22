@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Kas Futsal ⚽</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+
+  body {
+    min-height:100vh; color:#fff; padding:25px 15px;
+    background: linear-gradient(-45deg, #1a0033, #0f172a, #001a33, #2a0033);
+    background-size: 400% 400%; animation: bgShift 18s ease infinite;
+    position:relative; overflow-x:hidden;
+  }
+  @keyframes bgShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+  body::before, body::after {
+    content:''; position:fixed; border-radius:50%; filter:blur(90px); opacity:.35; z-index:0; pointer-events:none;
+  }
+  body::before { width:420px; height:420px; background:#22d3ee; top:-120px; left:-120px; animation: float1 14s ease-in-out infinite; }
+  body::after  { width:380px; height:380px; background:#e879f9; bottom:-120px; right:-120px; animation: float2 16s ease-in-out infinite; }
+  @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,50px)} }
+  @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-60px,-50px)} }
+
+  .container { max-width:1200px; margin:auto; position:relative; z-index:1; }
+  
+  /* ===== HEADER & LOGO ===== */
+  .header-section {
+    display:flex; align-items:center; justify-content:center; gap:20px;
+    margin-bottom:30px; flex-wrap:wrap; text-align:center;
+  }
+  .logo-tim {
+    width:80px; height:80px; object-fit:contain;
+    border-radius:50%;
+    filter: drop-shadow(0 0 15px rgba(34,211,238,.6));
+    animation: bounceLogo 3s ease-in-out infinite;
+    background: rgba(255,255,255,.1);
+    padding:5px;
+    border: 2px solid rgba(255,255,255,.3);
+  }
+  @keyframes bounceLogo {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.05); }
+  }
+
+  h1 {
+    font-size:2.2rem; font-weight:800;
+    background: linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6,#facc15);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    background-size:300% auto; animation: shine 5s linear infinite;
+    filter: drop-shadow(0 0 20px rgba(167,139,250,.4));
+  }
+  @keyframes shine { to { background-position:300% center; } }
+
+  .page { display: none; animation: slideUp .4s ease forwards; }
+  .page.active { display: block; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-bottom:28px; }
+  .card {
+    position:relative; border-radius:20px; padding:22px; overflow:hidden;
+    background: rgba(255,255,255,.06); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border:1px solid rgba(255,255,255,.12); box-shadow: 0 8px 32px rgba(0,0,0,.35);
+    transition: transform .3s, box-shadow .3s;
+  }
+  .card:hover { transform: translateY(-6px) scale(1.02); }
+  .card::before { content:''; position:absolute; inset:0; opacity:.18; z-index:0; border-radius:20px; }
+  .card.masuk::before  { background: radial-gradient(circle at top right, #22c55e, transparent 70%); }
+  .card.keluar::before { background: radial-gradient(circle at top right, #ef4444, transparent 70%); }
+  .card.saldo::before  { background: radial-gradient(circle at top right, #facc15, transparent 70%); }
+  .card > * { position:relative; z-index:1; }
+  .card .icon { font-size:28px; margin-bottom:6px; display:block; }
+  .card h3 { font-size:13px; color:#cbd5e1; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; font-weight:600; }
+  .card p { font-size:28px; font-weight:800; margin-bottom:4px; }
+  .card.masuk p  { color:#4ade80; text-shadow:0 0 20px rgba(74,222,128,.5); }
+  .card.keluar p { color:#f87171; text-shadow:0 0 20px rgba(248,113,113,.5); }
+  .card.saldo p  { color:#fde047; text-shadow:0 0 20px rgba(253,224,71,.5); }
+  .card .sub { font-size:12px; color:#94a3b8; font-weight:400; }
+
+  .panel {
+    border-radius:20px; padding:24px; margin-bottom:26px;
+    background: rgba(255,255,255,.05); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border:1px solid rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.3); position:relative;
+  }
+  .panel h2 {
+    font-size:19px; margin-bottom:18px; font-weight:700;
+    background: linear-gradient(90deg,#22d3ee,#a78bfa);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-group label { font-size:12px; color:#cbd5e1; font-weight:600; margin-left:4px; display:flex; align-items:center; gap:6px; }
+  
+  input, select, button {
+    padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.15);
+    background: rgba(15,23,42,.6); color:#f1f5f9; font-size:14px; font-family:inherit;
+    transition: all .25s; width:100%;
+  }
+  input::placeholder { color:#64748b; }
+  input:focus, select:focus { outline:none; border-color:#a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,.25); background: rgba(15,23,42,.85); }
+  
+  input[type="number"] { color: #94a3b8; }
+  input[type="number"]:focus { color: #f1f5f9; }
+
+  /* ===== CUSTOM FILE UPLOAD (PREVIEW) ===== */
+  .upload-area {
+    border: 2px dashed rgba(167,139,250,.5);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    background: rgba(15,23,42,.4);
+    transition: all .3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .upload-area:hover {
+    background: rgba(167,139,250,.1);
+    border-color: #a78bfa;
+  }
+  
+  .upload-area input[type="file"] {
+    position: absolute; 
+    inset: 0; 
+    opacity: 0; 
+    cursor: pointer; 
+    width: 100%; 
+    height: 100%;
+    z-index: 10; 
+  }
+  
+  .upload-placeholder { color: #94a3b8; font-size: 14px; position: relative; z-index: 1; pointer-events: none; }
+  .upload-placeholder span { font-size: 28px; display: block; margin-bottom: 8px; }
+  
+  #previewFoto {
+    display: none; 
+    max-width: 100%; 
+    max-height: 200px; 
+    border-radius: 10px;
+    object-fit: contain; 
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    position: relative;
+    z-index: 2; 
+    pointer-events: none; 
+  }
+  
+  .btn-hapus-foto {
+    display: none; position: absolute; top: 10px; right: 10px;
+    background: #ef4444; color: #fff; border-radius: 50%;
+    width: 30px; height: 30px; padding: 0; font-size: 16px; border: none;
+    cursor: pointer; z-index: 15; box-shadow: 0 4px 10px rgba(0,0,0,.5);
+  }
+  .btn-hapus-foto:hover { transform: scale(1.1); }
+
+  button {
+    background: linear-gradient(135deg,#22d3ee,#a78bfa,#f472b6); background-size:200% 200%;
+    color:#fff; font-weight:700; cursor:pointer; border:none;
+    box-shadow: 0 6px 20px rgba(167,139,250,.4); animation: btnGrad 4s ease infinite;
+  }
+  @keyframes btnGrad { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  button:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(244,114,182,.5); }
+  button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+  
+  button.danger {
+    background: linear-gradient(135deg,#ef4444,#f97316); background-size:100% 100%;
+    color:#fff; padding:7px 12px; font-size:12px; box-shadow: 0 4px 12px rgba(239,68,68,.35);
+    animation:none; width:auto;
+  }
+  button.danger:hover { box-shadow: 0 6px 18px rgba(239,68,68,.55); }
+
+  .btn-back {
+    background: rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+    color:#cbd5e1; box-shadow:none; animation:none; width:auto;
+    padding:10px 20px; margin-bottom:20px; font-size:14px;
+  }
+  .btn-back:hover { background: rgba(255,255,255,.2); color:#fff; box-shadow:none; }
+
+  .fab-container { position:fixed; bottom:30px; right:30px; z-index:90; }
+  .btn-fab {
+    width:auto; padding:16px 28px; border-radius:50px; font-size:16px;
+    display:flex; align-items:center; gap:10px;
+    box-shadow: 0 10px 30px rgba(167,139,250,.6);
+    animation: btnGrad 4s ease infinite, floatBtn 3s ease-in-out infinite;
+  }
+  @keyframes floatBtn { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  .section-label {
+    font-size:12px; color:#a78bfa; text-transform:uppercase; letter-spacing:1.5px;
+    margin:18px 0 12px; font-weight:700; display:flex; align-items:center; gap:8px;
+  }
+  .section-label::before { content:''; width:4px; height:16px; border-radius:4px; background: linear-gradient(180deg,#22d3ee,#a78bfa); }
+  .section-label:first-of-type { margin-top:0; }
+
+  .table-wrap { overflow-x:auto; border-radius:14px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; min-width:720px; }
+  th { padding:14px 12px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:1px; background: linear-gradient(90deg, rgba(34,211,238,.15), rgba(167,139,250,.15)); color:#e0e7ff; font-weight:700; }
+  th:first-child { border-top-left-radius:14px; }
+  th:last-child  { border-top-right-radius:14px; }
+  td { padding:12px; border-bottom:1px solid rgba(255,255,255,.06); }
+  tr { transition: background .2s; }
+  tr:hover td { background: rgba(167,139,250,.08); }
+
+  .foto-thumb { width:48px; height:48px; object-fit:cover; border-radius:10px; cursor:pointer; border:2px solid rgba(167,139,250,.4); transition: all .25s; }
+  .foto-thumb:hover { transform:scale(1.15); border-color:#f472b6; box-shadow: 0 0 18px rgba(244,114,182,.6); }
+
+  .match-list { display:grid; gap:14px; }
+  .match-card {
+    border-radius:16px; padding:18px; position:relative; overflow:hidden;
+    background: linear-gradient(135deg, rgba(34,211,238,.1), rgba(167,139,250,.1));
+    border:1px solid rgba(167,139,250,.25); transition: transform .3s, box-shadow .3s;
+  }
+  .match-card:hover { transform: translateX(4px); box-shadow: 0 8px 25px rgba(167,139,250,.25); }
+  .match-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background: linear-gradient(180deg,#22d3ee,#a78bfa,#f472b6); }
+  .match-card h4 { color:#e0e7ff; margin-bottom:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:15px; }
+  .match-card h4 .loc { font-size:12px; color:#94a3b8; font-weight:400; }
+  .match-card ul { list-style:none; font-size:13px; color:#cbd5e1; }
+  .match-card li { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(255,255,255,.08); }
+  .match-card li:last-child { border:none; }
+  .match-card li span:last-child { color:#fca5a5; font-weight:600; }
+  .match-card .totals { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:12.5px; margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,.12); }
+  .match-card .totals .in  { color:#4ade80; font-weight:700; }
+  .match-card .totals .out { color:#f87171; font-weight:700; }
+  .match-card .totals .bal { color:#fde047; font-weight:700; }
+
+  .empty { text-align:center; color:#64748b; padding:28px; font-style:italic; font-size:14px; }
+
+  #galeriFoto { display:flex; flex-wrap:wrap; gap:12px; }
+  .galeri-item { text-align:center; }
+  .galeri-item img { width:95px; height:95px; object-fit:cover; border-radius:12px; cursor:pointer; border:2px solid rgba(167,139,250,.4); transition: all .3s; }
+  .galeri-item img:hover { transform:scale(1.08) rotate(-2deg); border-color:#22d3ee; box-shadow: 0 0 22px rgba(34,211,238,.6); }
+  .galeri-item .cap { font-size:11px; color:#94a3b8; margin-top:6px; max-width:95px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  #modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:99; justify-content:center; align-items:center; padding:20px; }
+  #modal img { max-width:92%; max-height:92%; border-radius:16px; box-shadow: 0 0 60px rgba(167,139,250,.6); }
+  #modal.show { display:flex; cursor:zoom-out; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+
+  /* ================= RESPONSIVE MOBILE ================= */
+  @media(max-width: 850px) {
+    body { padding: 15px 10px; }
+    .header-section { flex-direction: row; gap: 10px; margin-bottom: 20px; flex-wrap: nowrap; }
+    .logo-tim { width: 50px; height: 50px; flex-shrink: 0; }
+    h1 { font-size: 1.2rem; text-align: left; line-height: 1.1; }
+
+    .cards { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .card { padding: 10px 6px; text-align: center; }
+    .card h3 { font-size: 9px; letter-spacing: 0; margin-bottom: 4px; }
+    .card p { font-size: 13px; word-break: break-word; margin-bottom: 2px; }
+    .card .sub { font-size: 8px; display: none; }
+    .card .icon { font-size: 16px; margin-bottom: 2px; }
+
+    .panel { padding: 12px; margin-bottom: 16px; border-radius: 12px; }
+    .panel h2 { font-size: 14px; margin-bottom: 10px; }
+
+    .form-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .form-group label { font-size: 10px; }
+    input, select, button { padding: 8px 10px; font-size: 12px; }
+
+    #btnSubmit { width: auto !important; padding: 10px 20px; font-size: 13px; margin: 0 auto; display: block; }
+
+    .two-col { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .table-wrap { margin: 0 -12px; padding: 0 12px; }
+    table { min-width: 100%; }
+    th, td { padding: 6px 4px; font-size: 10px; }
+    .foto-thumb { width: 25px; height: 25px; border-radius: 5px; }
+
+    .fab-container { bottom: 15px; right: 10px; }
+    .btn-fab { padding: 10px 16px; font-size: 12px; }
+
+    .match-card { padding: 10px; border-radius: 12px; }
+    .match-card h4 { font-size: 11px; }
+    .match-card ul { font-size: 10px; }
+    .match-card li { padding: 4px 0; }
+    .match-card .totals { font-size: 9px; flex-direction: column; gap: 4px; }
+
+    .galeri-item img { width: 60px; height: 60px; }
+    .galeri-item .cap { font-size: 8px; max-width: 60px; }
+    
+    .page#pageTambah .header-section { margin-bottom: 10px; flex-direction: row; }
+    .page#pageTambah .header-section img { width: 40px; height: 40px; }
+
+    .upload-area { min-height: 100px; padding: 10px; }
+    .upload-placeholder { font-size: 11px; }
+    .upload-placeholder span { font-size: 20px; }
+    #previewFoto { max-height: 150px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="pageDashboard" class="page active">
+  <div class="container">
+    <div class="header-section">
+      <img src="https://lh3.googleusercontent.com/d/1WU3pqahRqGzUlKa60UK9kdZ9BzkQchja=w2000" alt="Logo Tim Futsal" class="logo-tim">
+      <h1>PREMAN FUTSAL KAS</h1>
+    </div>
+
+    <div class="cards">
+      <div class="card masuk"><span class="icon">💰</span><h3>Pemasukan Terakhir</h3><p id="totalMasuk">Rp 0</p><div class="sub" id="subMasuk">Belum ada data</div></div>
+      <div class="card keluar"><span class="icon">💸</span><h3>Pengeluaran Terakhir</h3><p id="totalKeluar">Rp 0</p><div class="sub" id="subKeluar">Belum ada data</div></div>
+      <div class="card saldo"><span class="icon">🏦</span><h3>Sisa Saldo Terakhir</h3><p id="saldo">Rp 0</p><div class="sub" id="subSaldo">Belum ada data</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>📋 Riwayat Pertandingan</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tanggal</th><th>Lokasi</th><th>Pemasukan</th><th>Pengeluaran</th><th>Sisa</th><th>Foto</th><th>Aksi</th></tr></thead>
+          <tbody id="tbodyRiwayat"></tbody>
+        </table>
+      </div>
+      <div id="emptyRiwayat" class="empty">Belum ada data pertandingan.</div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <h2>🏆 Rincian per Pertandingan</h2>
+        <div id="rincianPertandingan" class="match-list"></div>
+        <div id="emptyPertandingan" class="empty">Belum ada data pertandingan.</div>
+      </div>
+      <div class="panel">
+        <h2>📸 Galeri Foto Pertemuan</h2>
+        <div id="galeriFoto"></div>
+        <div id="emptyFoto" class="empty">Belum ada foto.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pageTambah" class="page">
+  <div class="container" style="max-width:800px;">
+    <div class="header-section">
+      <img src="https://lh3.googleusercontent.com/d/1WU3pqahRqGzUlKa60UK9kdZ9BzkQchja=w2000" alt="Logo Tim Futsal" style="width:50px; height:50px; border-radius:50%; border:2px solid rgba(255,255,255,.3); object-fit:contain; background:rgba(255,255,255,.1); padding:3px;">
+    </div>
+    
+    <button class="btn-back" onclick="switchPage('dashboard')">← Kembali ke Dashboard</button>
+    <div class="panel">
+      <h2>➕ Tambah Data Pertandingan</h2>
+      <form id="formPertandingan">
+        <div class="section-label">Info Pertandingan</div>
+        <div class="form-grid">
+          <div class="form-group"><label>📅 Tanggal Pertandingan</label><input type="date" id="tgl"></div>
+          <div class="form-group"><label>🏟️ Lokasi / Lapangan</label><input type="text" id="lokasi" placeholder="Contoh: GOR Futsal Senayan"></div>
+          <div class="form-group" style="grid-column: span 2;"><label>💰 Total Pemasukan (Rp)</label><input type="number" id="pemasukan" placeholder="Contoh: 500000" min="0"></div>
+        </div>
+        <div class="section-label">Rincian Pengeluaran</div>
+        <div class="form-grid">
+          <div class="form-group"><label>🏟️ Sewa Lapangan (Rp)</label><input type="number" id="sewa" placeholder="0" min="0" value="0" onfocus="if(this.value === '0') this.value = '';" onblur="if(this.value === '') this.value = '0';"></div>
+          <div class="form-group"><label>🍔 Konsumsi (Rp)</label><input type="number" id="konsumsi" placeholder="0" min="0" value="0" onfocus="if(this.value === '0') this.value = '';" onblur="if(this.value === '') this.value = '0';"></div>
+          <div class="form-group"><label>💧 Air Minum (Rp)</label><input type="number" id="air" placeholder="0" min="0" value="0" onfocus="if(this.value === '0') this.value = '';" onblur="if(this.value === '') this.value = '0';"></div>
+          <div class="form-group"><label>📦 Lain-lain (Rp)</label><input type="number" id="lain" placeholder="0" min="0" value="0" onfocus="if(this.value === '0') this.value = '';" onblur="if(this.value === '') this.value = '0';"></div>
+        </div>
+        <div class="section-label">Foto Pertemuan (Disimpan ke Google Drive)</div>
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>📸 Upload Foto (Opsional)</label>
+            
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="foto" accept="image/*">
+              
+              <div class="upload-placeholder" id="uploadPlaceholder">
+                <span>📁</span>
+                Klik atau seret foto ke sini
+              </div>
+              
+              <img id="previewFoto" src="" alt="Preview">
+              
+              <button type="button" class="btn-hapus-foto" id="btnHapusFoto">✕</button>
+            </div>
+            
+            <small style="color:#94a3b8; font-size:10px; margin-top:4px;">*Foto akan otomatis diunggah ke Google Drive (folder khusus).</small>
+          </div>
+        </div>
+        <div style="margin-top:24px;">
+          <button type="button" id="btnSubmit" onclick="simpanPertandingan()">✨ Simpan Pertandingan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="fab-container" id="fabContainer">
+  <button class="btn-fab" onclick="switchPage('tambah')"><span style="font-size:20px;">➕</span> Tambah Data</button>
+</div>
+
+<div id="modal"><img id="modalImg" src="" alt="Foto"></div>
+
+<script>
+/* ================== KONFIGURASI ================== */
+const API_URL = "https://script.google.com/macros/s/AKfycbzStP3tjmzsHIWKB1mnIzmJycm0arF3FrCMIKLnQlkMFn417GoX92czgFGo3vbzxmDH/exec"; 
+
+/* ================== STATE ================== */
+let data = [];
+
+/* ================== HELPERS ================== */
+const rupiah = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+const totalPengeluaran = p => (+p.sewa||0) + (+p.konsumsi||0) + (+p.air||0) + (+p.lain||0);
+const sortedDataAsc = () => [...data].sort((a,b) => new Date(a.tgl) - new Date(b.tgl) || Number(a.id) - Number(b.id));
+
+function kompresGambar(file, callback){
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 800; 
+      const scale = Math.min(1, maxW / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      callback(canvas.toDataURL('image/jpeg', 0.8)); 
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ================== FUNGSI PREVIEW FOTO ================== */
+function tampilkanPreview(file) {
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const imgPreview = document.getElementById('previewFoto');
+      imgPreview.src = e.target.result;
+      imgPreview.style.display = 'block';
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+      document.getElementById('btnHapusFoto').style.display = 'block';
+      document.getElementById('uploadArea').style.borderStyle = 'solid';
+      document.getElementById('uploadArea').style.padding = '10px';
+    }
+    reader.readAsDataURL(file);
+  }
+}
+
+function hapusFoto(event) {
+  event.stopPropagation(); 
+  document.getElementById('foto').value = ''; 
+  document.getElementById('previewFoto').src = '';
+  document.getElementById('previewFoto').style.display = 'none';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('btnHapusFoto').style.display = 'none';
+  document.getElementById('uploadArea').style.borderStyle = 'dashed';
+  document.getElementById('uploadArea').style.padding = '20px';
+}
+
+function resetUploadArea() {
+  document.getElementById('foto').value = '';
+  document.getElementById('previewFoto').src = '';
+  document.getElementById('previewFoto').style.display = 'none';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('btnHapusFoto').style.display = 'none';
+  document.getElementById('uploadArea').style.borderStyle = 'dashed';
+  document.getElementById('uploadArea').style.padding = '20px';
+}
+
+/* ================== ROUTING ================== */
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if(page === 'dashboard') {
+    document.getElementById('pageDashboard').classList.add('active');
+    document.getElementById('fabContainer').style.display = 'block';
+    render(); 
+  } else if(page === 'tambah') {
+    document.getElementById('pageTambah').classList.add('active');
+    document.getElementById('fabContainer').style.display = 'none';
+    document.getElementById('tgl').valueAsDate = new Date();
+    window.scrollTo(0, 0);
+  }
+}
+
+/* ================== RENDER ================== */
+function render(){
+  renderRingkasan();
+  renderRiwayat();
+  renderPertandingan();
+  renderGaleri();
+}
+
+function renderRingkasan(){
+  if(data.length === 0){
+    document.getElementById('totalMasuk').textContent = 'Rp 0';
+    document.getElementById('totalKeluar').textContent = 'Rp 0';
+    document.getElementById('saldo').textContent = 'Rp 0';
+    ['subMasuk','subKeluar','subSaldo'].forEach(id => document.getElementById(id).textContent = 'Belum ada data');
+    return;
+  }
+  
+  const latest = [...data].sort((a, b) => Number(b.id) - Number(a.id))[0];
+  const pemasukanTerakhir = (+latest.pemasukan || 0);
+  const pengeluaranTerakhir = (+latest.pengeluaran || 0); // Menggunakan field pengeluaran dari GS
+
+  let totalMasukAll = 0;
+  let totalKeluarAll = 0;
+  
+  data.forEach(d => {
+    totalMasukAll += (+d.pemasukan || 0);
+    totalKeluarAll += (+d.pengeluaran || 0);
+  });
+
+  const sisaSaldoTotal = totalMasukAll - totalKeluarAll;
+
+  document.getElementById('totalMasuk').textContent = rupiah(pemasukanTerakhir);
+  document.getElementById('totalKeluar').textContent = rupiah(pengeluaranTerakhir);
+  document.getElementById('saldo').textContent = rupiah(sisaSaldoTotal);
+  
+  const info = `Update: ${new Date(latest.tgl).toLocaleDateString('id-ID')} • ${latest.lokasi}`;
+  document.getElementById('subMasuk').textContent = info;
+  document.getElementById('subKeluar').textContent = info;
+  document.getElementById('subSaldo').textContent = info;
+}
+
+function renderRiwayat(){
+  const tb = document.getElementById('tbodyRiwayat');
+  const empty = document.getElementById('emptyRiwayat');
+  tb.innerHTML = '';
+  if(data.length === 0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  let saldoBerjalan = 0;
+  // Kita urutkan dari yang terlama ke terbaru untuk menghitung saldo berjalan
+  const dataWithSaldo = sortedDataAsc().map(t => {
+    const keluar = (+t.pengeluaran || 0);
+    saldoBerjalan += ((+t.pemasukan || 0) - keluar);
+    return { ...t, sisaSaldo: saldoBerjalan, totalKeluar: keluar };
+  });
+
+  // Tampilkan terbalik (terbaru di atas)
+  dataWithSaldo.reverse().forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${new Date(t.tgl).toLocaleDateString('id-ID')}</td>
+      <td>${t.lokasi}</td>
+      <td style="color:#4ade80;font-weight:700;">${rupiah(t.pemasukan)}</td>
+      <td style="color:#f87171;font-weight:700;">${rupiah(t.totalKeluar)}</td>
+      <td style="color:#fde047;font-weight:700;">${rupiah(t.sisaSaldo)}</td>
+      <td>${t.foto && t.foto !== "-" ? `<img src="${t.foto}" class="foto-thumb" onclick="lihatFoto('${t.id}')" onerror="this.style.display='none'">` : '-'}</td>
+      <td><button class="danger" onclick="hapus('${t.id}')">🗑</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function renderPertandingan(){
+  const wrap = document.getElementById('rincianPertandingan');
+  const empty = document.getElementById('emptyPertandingan');
+  wrap.innerHTML = '';
+  if(data.length === 0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  let saldoBerjalan = 0;
+  const dataWithSaldo = sortedDataAsc().map(t => {
+    const keluar = (+t.pengeluaran || 0);
+    saldoBerjalan += ((+t.pemasukan || 0) - keluar);
+    return { ...t, sisaSaldo: saldoBerjalan, totalKeluar: keluar };
+  });
+
+  dataWithSaldo.reverse().forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'match-card';
+    card.innerHTML = `
+      <h4><span>🏆 ${new Date(t.tgl).toLocaleDateString('id-ID')} <span class="loc">• ${t.lokasi}</span></span></h4>
+      <ul>
+        <li><span>🏟️ Total Pengeluaran</span><span>${rupiah(t.totalKeluar)}</span></li>
+      </ul>
+      <div class="totals">
+        <span class="in">💰 ${rupiah(t.pemasukan)}</span>
+        <span class="out">💸 ${rupiah(t.totalKeluar)}</span>
+        <span class="bal">🏦 ${rupiah(t.sisaSaldo)}</span>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+}
+
+function renderGaleri(){
+  const wrap = document.getElementById('galeriFoto');
+  const empty = document.getElementById('emptyFoto');
+  wrap.innerHTML = '';
+  const berfoto = data.filter(t => t.foto && t.foto !== "-");
+  if(berfoto.length === 0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  berfoto.sort((a,b) => Number(b.id) - Number(a.id)).forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'galeri-item';
+    div.innerHTML = `
+      <img src="${t.foto}" onclick="lihatFoto('${t.id}')" onerror="this.style.display='none'">
+      <div class="cap">${new Date(t.tgl).toLocaleDateString('id-ID')} • ${t.lokasi}</div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+/* ================== FUNGSI AMBIL DATA DARI SPREADSHEET ================== */
+async function ambilDataDariSpreadsheet() {
+  try {
+    const response = await fetch(`${API_URL}?action=getData`);
+    const result = await response.json();
+    
+    if (Array.isArray(result)) {
+      // Ubah format dari Spreadsheet (pengeluaran) agar sesuai dengan format HTML
+      data = result.map(item => ({
+        id: item.id,
+        tgl: item.tgl,
+        lokasi: item.lokasi,
+        pemasukan: item.pemasukan,
+        pengeluaran: item.pengeluaran, // Di HTML, ini kita anggap total pengeluaran
+        foto: item.foto
+      })).sort((a, b) => Number(b.id) - Number(a.id));
+
+      render(); // Tampilkan ke layar
+    }
+  } catch (error) {
+    console.warn("Gagal mengambil data dari Spreadsheet, pastikan API_URL dan Deploy benar.", error);
+  }
+}
+
+/* ================== AKSI SIMPAN ================== */
+async function simpanPertandingan() {
+  const btnSubmit = document.getElementById('btnSubmit');
+  const originalText = btnSubmit.innerHTML;
+  
+  const tgl = document.getElementById('tgl').value;
+  const lokasi = document.getElementById('lokasi').value.trim();
+  const pemasukan = +document.getElementById('pemasukan').value || 0;
+  const fileFoto = document.getElementById('foto').files[0];
+
+  if(!tgl || !lokasi) {
+    alert("⚠️ Mohon isi Tanggal dan Lokasi Pertandingan terlebih dahulu!");
+    return;
+  }
+
+  btnSubmit.disabled = true;
+  btnSubmit.innerHTML = "⏳ Memproses...";
+
+  // Hitung total pengeluaran yang diinput
+  const totalKeluar = 
+    (+document.getElementById('sewa').value || 0) +
+    (+document.getElementById('konsumsi').value || 0) +
+    (+document.getElementById('air').value || 0) +
+    (+document.getElementById('lain').value || 0);
+
+  const newItem = {
+    id: Date.now().toString(),
+    tgl, lokasi, pemasukan, pengeluaran: totalKeluar,
+    foto: null
+  };
+
+  // LANGKAH 1: Simpan ke Array lokal agar langsung tampil
+  data.push(newItem);
+  render(); 
+
+  // LANGKAH 2: Upload Foto (Jika ada)
+  if(fileFoto) {
+    btnSubmit.innerHTML = "⏳ Mengunggah Foto...";
+    
+    const linkFoto = await new Promise((resolve) => {
+      kompresGambar(fileFoto, async (base64Image) => {
+        try {
+          const formData = new URLSearchParams();
+          formData.append('action', 'uploadFoto');
+          formData.append('image', base64Image);
+          formData.append('filename', `futsal_${Date.now()}.jpg`);
+
+          const response = await fetch(API_URL, { method: 'POST', body: formData });
+          const result = await response.json();
+          
+          if(result.status === 'success') resolve(result.url);
+          else resolve(null);
+        } catch (err) {
+          resolve(null);
+        }
+      });
+    });
+
+    if(linkFoto) {
+      newItem.foto = linkFoto;
+    }
+  }
+
+  // LANGKAH 3: Kirim Data ke Spreadsheet
+  try {
+    btnSubmit.innerHTML = "⏳ Menyimpan ke Spreadsheet...";
+    
+    // Hitung total saldo keseluruhan untuk dicatat di spreadsheet
+    const totalMasukAll = data.reduce((acc, curr) => acc + (+curr.pemasukan || 0), 0);
+    const totalKeluarAll = data.reduce((acc, curr) => acc + (+curr.pengeluaran || 0), 0);
+    const sisaSaldo = totalMasukAll - totalKeluarAll;
+
+    const formData = new URLSearchParams();
+    formData.append('id', newItem.id);
+    formData.append('tgl', newItem.tgl);
+    formData.append('lokasi', newItem.lokasi);
+    formData.append('pemasukan', newItem.pemasukan);
+    formData.append('pengeluaran', newItem.pengeluaran);
+    formData.append('saldo', sisaSaldo);
+    formData.append('foto', newItem.foto || "-");
+    
+    await fetch(API_URL, { method: 'POST', body: formData });
+    
+  } catch(e) {
+    console.warn("Gagal kirim ke Spreadsheet. Data hanya tersimpan sementara di layar.");
+  }
+
+  // LANGKAH 4: Reset Form & Kembali ke Dashboard
+  document.getElementById('formPertandingan').reset();
+  ['sewa','konsumsi','air','lain'].forEach(id => document.getElementById(id).value = '0'); 
+  resetUploadArea(); 
+  
+  btnSubmit.disabled = false;
+  btnSubmit.innerHTML = originalText;
+  
+  switchPage('dashboard');
+  render(); 
+  alert("✅ Data berhasil disimpan dan dikirim ke Spreadsheet!");
+}
+
+/* ================== AKSI HAPUS ================== */
+function hapus(id){
+  if(confirm('Yakin hapus data ini dari tampilan? (Data di Spreadsheet tidak terhapus)')) {
+    data = data.filter(t => t.id !== id);
+    render();
+  }
+}
+
+function lihatFoto(id){
+  const t = data.find(x => x.id === id);
+  if(!t || !t.foto) return;
+  document.getElementById('modalImg').src = t.foto;
+  document.getElementById('modal').classList.add('show');
+}
+
+document.getElementById('modal').addEventListener('click', function(){
+  this.classList.remove('show');
+});
+
+/* ================== INIT (SAAT REFRESH) ================== */
+document.addEventListener('DOMContentLoaded', () => {
+  // Ambil data terbaru langsung dari Google Spreadsheet
+  ambilDataDariSpreadsheet();
+
+  // Pasang event listener foto
+  const inputFoto = document.getElementById('foto');
+  if (inputFoto) {
+    inputFoto.addEventListener('change', function(e) {
+      tampilkanPreview(e.target.files[0]);
+    });
+  }
+
+  const btnHapus = document.getElementById('btnHapusFoto');
+  if (btnHapus) {
+    btnHapus.addEventListener('click', hapusFoto);
+  }
+});
+</script>
+</body>
+</html>
